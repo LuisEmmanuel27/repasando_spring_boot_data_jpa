@@ -339,5 +339,141 @@ static void tearDownClass() {
 .
 ```
 
-## Tests para `StudentMapper`
+## Tests para `StudentMapper` - toStudent
 
+Eliminamos los test antes creados y agregamos lo siguiente:
+
+```java
+package com.alibou.example.student;
+
+import org.springframework.stereotype.Service;
+
+import com.alibou.example.school.School;
+
+@Service
+public class StudentMapper {
+
+  // Metodo para crear el Estudiante en base al DTO
+  public Student toStudent(StudentDto dto) {
+    var student = new Student();
+    student.setName(dto.name());
+    student.setLastname(dto.lastname());
+    student.setEmail(dto.email());
+
+    var school = new School();
+    school.setId(dto.SchoolId());
+
+    student.setSchool(school);
+
+    return student;
+  }
+
+  // Metodo para responder con el Estudiante en base al DTO
+  public StudentResponseDto studentResponseDto(Student student) {
+    return new StudentResponseDto(student.getName(), student.getLastname(), student.getEmail());
+  }
+}
+```
+
+Este código es un buen ejemplo de cómo escribir pruebas unitarias para un método de mapeo, en este caso el método `toStudent` del `StudentMapper`. Vamos a desglosarlo paso por paso para entender lo que hace y cómo está estructurado el test.
+
+### 1. **Clase de prueba `StudentMapperTest`**
+La clase `StudentMapperTest` es donde se definen los tests unitarios para la clase `StudentMapper`. Este tipo de test tiene como objetivo verificar que el comportamiento del método de mapeo sea correcto, es decir, que el método `toStudent` convierta un `StudentDto` en una entidad `Student` de manera correcta.
+
+### 2. **Inicialización del mapper**
+```java
+@BeforeEach
+void setUp() {
+  studentMapper = new StudentMapper();
+}
+```
+- **`@BeforeEach`**: Esta anotación indica que el método `setUp()` se ejecutará **antes de cada prueba**. En este caso, lo que hace es inicializar una nueva instancia de `StudentMapper` para cada test, asegurándose de que cada prueba comience con un estado limpio y sin efectos de pruebas anteriores.
+
+### 3. **Método de prueba `shouldMapStudentDtoToStudent`**
+```java
+@Test
+void shouldMapStudentDtoToStudent() {
+  StudentDto studentDto = new StudentDto(
+      "John", "Doe", "john@doe.com", 1);
+  
+  Student student = studentMapper.toStudent(studentDto);
+  
+  assertEquals(studentDto.name(), student.getName());
+  assertEquals(studentDto.lastname(), student.getLastname());
+  assertEquals(studentDto.email(), student.getEmail());
+  assertNotNull(student.getSchool());
+  assertEquals(studentDto.SchoolId(), student.getSchool().getId());
+}
+```
+Este es el corazón de nuestro test, y se descompone en varios pasos importantes:
+
+- **Creación del objeto `StudentDto`**: 
+   ```java
+   StudentDto studentDto = new StudentDto("John", "Doe", "john@doe.com", 1);
+   ```
+   Aquí se crea una instancia de `StudentDto`, que es el objeto de datos que será pasado al mapper. El DTO tiene los valores `"John"`, `"Doe"`, `"john@doe.com"` como nombre, apellido, y email respectivamente, y el `SchoolId` es `1`.
+
+- **Invocación del método a probar**:
+   ```java
+   Student student = studentMapper.toStudent(studentDto);
+   ```
+   El método `toStudent` del `StudentMapper` es invocado con el `studentDto` como argumento. Esto devuelve una instancia de `Student` que debería haber sido correctamente mapeada a partir del DTO.
+
+- **Verificación de los resultados**:
+   Después de la conversión, se utilizan varias aserciones para verificar que los datos se han mapeado correctamente:
+   - **`assertEquals(studentDto.name(), student.getName())`**: Verifica que el nombre en el DTO es igual al nombre en el objeto `Student`.
+   - **`assertEquals(studentDto.lastname(), student.getLastname())`**: Verifica que el apellido en el DTO es igual al apellido en el `Student`.
+   - **`assertEquals(studentDto.email(), student.getEmail())`**: Verifica que el email en el DTO es igual al email en el `Student`.
+   - **`assertNotNull(student.getSchool())`**: Verifica que el objeto `School` no sea `null`. Esto garantiza que la escuela ha sido creada e inyectada correctamente en el estudiante.
+   - **`assertEquals(studentDto.SchoolId(), student.getSchool().getId())`**: Verifica que el ID de la escuela en el DTO coincide con el ID de la escuela en el objeto `Student`.
+
+### 4. **Explicación de las aserciones**
+Las aserciones son fundamentales en las pruebas unitarias, ya que son las que nos permiten verificar si el comportamiento del método es el esperado. 
+
+- **`assertEquals(expected, actual)`**: Esta aserción verifica que el valor esperado (en este caso, tomado del `StudentDto`) coincida con el valor actual (el que ha sido mapeado al objeto `Student`). Si los valores no coinciden, el test fallará, lo que indica un problema en el mapeo.
+
+- **`assertNotNull(actual)`**: Verifica que el objeto no sea `null`. En este caso, se asegura de que el estudiante tenga asociada una escuela, lo que significa que el mapeo fue correcto y la relación entre `Student` y `School` fue establecida.
+
+## Tests para `StudentMapper` - studentResponseDto
+
+Agregamos el siguiente Test:
+
+```java
+@Test
+void shouldMapStudentToStudentResponseDto() {
+  // Given
+  Student student = new Student("Jhon", "Doe", "jhon@doe.com", 27);
+
+  // When
+  StudentResponseDto studentResponseDto = studentMapper.studentResponseDto(student);
+
+  // Then
+  assertEquals(student.getName(), studentResponseDto.name());
+  assertEquals(student.getLastname(), studentResponseDto.lastname());
+  assertEquals(student.getEmail(), studentResponseDto.email());
+}
+```
+
+Este nuevo test verifica que el método `studentResponseDto` del `StudentMapper` funcione correctamente, asegurándose de que un objeto `Student` se convierta adecuadamente en un `StudentResponseDto`. Aquí está el desglose del test:
+
+### 1. **Preparación (`Given`)**
+```java
+Student student = new Student("Jhon", "Doe", "jhon@doe.com", 27);
+```
+Aquí creamos un objeto `Student` con nombre, apellido, email y edad. Este objeto será el que el método `studentResponseDto` tomará para convertir en un `StudentResponseDto`.
+
+### 2. **Acción (`When`)**
+```java
+StudentResponseDto studentResponseDto = studentMapper.studentResponseDto(student);
+```
+En esta línea se invoca el método `studentResponseDto` del mapper, pasándole el objeto `Student` creado previamente. Esto devuelve un objeto `StudentResponseDto` que contendrá los mismos valores de nombre, apellido y email que el `Student`.
+
+### 3. **Verificación (`Then`)**
+```java
+assertEquals(student.getName(), studentResponseDto.name());
+assertEquals(student.getLastname(), studentResponseDto.lastname());
+assertEquals(student.getEmail(), studentResponseDto.email());
+```
+Aquí se verifica que los valores del objeto `StudentResponseDto` coincidan con los del objeto `Student` original. Cada aserción (`assertEquals`) comprueba que el nombre, apellido y email del `StudentResponseDto` son correctos en relación con el `Student`.
+
+# 

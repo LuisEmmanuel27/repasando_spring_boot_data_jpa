@@ -1,39 +1,44 @@
 package com.alibou.example.student;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class StudentMapperTest {
-  @BeforeAll
-  static void setUpClass() {
-    System.out.println("Antes de todos los tests");
-  }
-
-  @AfterAll
-  static void tearDownClass() {
-    System.out.println("Despues de todos los tests");
-  }
+  private StudentMapper studentMapper;
 
   @BeforeEach
   void setUp() {
-    System.out.println("Antes que cualquier test");
-  }
-
-  @AfterEach
-  void tearDown() {
-    System.out.println("Despues de cada test");
+    studentMapper = new StudentMapper();
   }
 
   @Test
-  void testMethod1() {
-    System.out.println("Mi primer test");
+  void shouldMapStudentDtoToStudent() {
+    StudentDto studentDto = new StudentDto(
+        "John", "Doe", "john@doe.com", 1);
+
+    Student student = studentMapper.toStudent(studentDto);
+
+    assertEquals(studentDto.name(), student.getName());
+    assertEquals(studentDto.lastname(), student.getLastname());
+    assertEquals(studentDto.email(), student.getEmail());
+    assertNotNull(student.getSchool());
+    assertEquals(studentDto.SchoolId(), student.getSchool().getId());
   }
 
   @Test
-  void testMethod2() {
-    System.out.println("Mi segundo test");
+  void shouldMapStudentToStudentResponseDto() {
+    // Given
+    Student student = new Student("Jhon", "Doe", "jhon@doe.com", 27);
+
+    // When
+    StudentResponseDto studentResponseDto = studentMapper.studentResponseDto(student);
+
+    // Then
+    assertEquals(student.getName(), studentResponseDto.name());
+    assertEquals(student.getLastname(), studentResponseDto.lastname());
+    assertEquals(student.getEmail(), studentResponseDto.email());
   }
 }
