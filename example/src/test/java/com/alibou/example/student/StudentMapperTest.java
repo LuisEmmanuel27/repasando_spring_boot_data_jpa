@@ -2,6 +2,7 @@ package com.alibou.example.student;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,12 @@ public class StudentMapperTest {
     assertEquals(studentDto.email(), student.getEmail());
     assertNotNull(student.getSchool());
     assertEquals(studentDto.SchoolId(), student.getSchool().getId());
+  }
+
+  @Test
+  void shoud_throw_null_pointer_exception_when_studentDto_is_null() {
+    var exp = assertThrows(NullPointerException.class, () -> studentMapper.toStudent(null));
+    assertEquals("The studentDto should not be null", exp.getMessage());
   }
 
   @Test

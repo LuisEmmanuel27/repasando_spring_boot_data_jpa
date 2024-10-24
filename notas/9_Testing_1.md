@@ -476,4 +476,62 @@ assertEquals(student.getEmail(), studentResponseDto.email());
 ```
 Aquí se verifica que los valores del objeto `StudentResponseDto` coincidan con los del objeto `Student` original. Cada aserción (`assertEquals`) comprueba que el nombre, apellido y email del `StudentResponseDto` son correctos en relación con el `Student`.
 
+## Tests para `StudentMapper` - Test para Excepciones
+
+Primero, intentamos crear un test para verificar qué sucede cuando pasamos un `StudentDto` nulo al método `toStudent` del `StudentMapper`:
+
+```java
+@Test
+void shoud_map_studentsDto_to_student_when_studentDto_is_null() {
+  Student student = studentMapper.toStudent(null);
+  assertEquals("", student.getName());
+  assertEquals("", student.getLastname());
+}
+```
+**Error**: 
+- Al ejecutar este test, el programa lanzó una excepción `NullPointerException` porque el código intentaba acceder a los métodos de un objeto `null`. 
+- Esto sucedió porque el método `toStudent` no manejaba correctamente el caso de que el `dto` fuera `null`.
+
+#### 2. **Ajuste en el Mapper**
+Para resolver el problema, agregamos una verificación al método `toStudent` para que lance una excepción clara si el `StudentDto` es `null`:
+
+```java
+public Student toStudent(StudentDto dto) {
+    if (dto == null)  // <-- Verificación de nulo añadida
+      throw new NullPointerException("The studentDto should not be null");
+
+    var student = new Student();
+    student.setName(dto.name());
+    student.setLastname(dto.lastname());
+    student.setEmail(dto.email());
+
+    var school = new School();
+    school.setId(dto.SchoolId());
+
+    student.setSchool(school);
+
+    return student;
+}
+```
+**Explicación del ajuste**:
+- Antes de ejecutar cualquier lógica, el método ahora verifica si el `dto` es `null`.
+- Si lo es, lanzamos una `NullPointerException` con un mensaje claro: `"The studentDto should not be null"`. Esto nos ayuda a manejar este caso de manera explícita y evitar errores inesperados.
+
+#### 3. **Modificación del Test**
+Después de ajustar el código, modificamos el test para asegurarnos de que el método lance la excepción correcta cuando reciba un `StudentDto` nulo:
+
+```java
+@Test
+void shoud_throw_null_pointer_exception_when_studentDto_is_null() {
+  var exp = assertThrows(NullPointerException.class, () -> studentMapper.toStudent(null));
+  assertEquals("The studentDto should not be null", exp.getMessage());
+}
+```
+**Explicación del test**:
+- Usamos `assertThrows` para verificar que se lance una excepción `NullPointerException` cuando el `StudentDto` sea `null`.
+- Además, comprobamos que el mensaje de la excepción sea exactamente `"The studentDto should not be null"`, asegurándonos de que la excepción sea descriptiva y fácil de entender.
+
+#### 4. **Resultado Final**
+Después de estos ajustes, el test pasa correctamente. Ahora el código maneja el caso de un `StudentDto` nulo de manera clara y con una excepción apropiada.
+
 # 

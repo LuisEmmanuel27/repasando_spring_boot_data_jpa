@@ -9,6 +9,9 @@ public class StudentMapper {
 
   // Metodo para crear el Estudiante en base al DTO
   public Student toStudent(StudentDto dto) {
+    if (dto == null)
+      throw new NullPointerException("The studentDto should not be null");
+
     var student = new Student();
     student.setName(dto.name());
     student.setLastname(dto.lastname());
